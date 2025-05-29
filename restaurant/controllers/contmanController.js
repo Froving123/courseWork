@@ -306,7 +306,7 @@ class ContmanController {
             (err) => (err ? reject(err) : resolve())
           );
         });
-      } else if (categoryStatus !== 1) {
+      } else if (categoryStatus !== 0) {
         return res.status(400).json({
           success: false,
           message: "Некорректный статус категории или категория не найдена",
