@@ -191,7 +191,7 @@ export const Hide_Menu = () => {
         {categories.map((category) => (
           <div key={category.ID} className={Styles.category}>
             <div className={Styles.category_name}>
-              {category.ID_статуса === 2 && (
+              {category.Статус_удаления === 1 && (
                 <>
                   <button
                     className={Styles.button_category}
@@ -202,7 +202,7 @@ export const Hide_Menu = () => {
                 </>
               )}
               <h2 className={Styles.category_h}>{category.Наименование}</h2>
-              {category.ID_статуса === 2 && (
+              {category.Статус_удаления === 1 && (
                 <>
                   <button
                     className={Styles.button_category}

@@ -34,7 +34,7 @@ const upload = multer({ storage: storage });
 class ContmanController {
   async getHideCategories(req, res) {
     try {
-      const query = `SELECT ID, Наименование, ID_статуса FROM Категория_блюда ORDER BY ID`;
+      const query = `SELECT ID, Наименование, Статус_удаления FROM Категория_блюда ORDER BY ID`;
 
       conn.query(query, (err, results) => {
         if (err) {
@@ -77,9 +77,9 @@ class ContmanController {
         LEFT JOIN 
             Спец_предложения ON Блюда.ID = Спец_предложения.ID_блюда
             AND Спец_предложения.Дата_окончания >= CURRENT_DATE
-            AND Спец_предложения.ID_статуса = 1
+            AND Спец_предложения.Статус_удаления = 0
         WHERE 
-            Блюда.ID_статуса = 2
+            Блюда.Статус_удаления = 1
         ORDER BY 
             Категория_блюда.ID, Блюда.ID;
       `;
@@ -218,7 +218,7 @@ class ContmanController {
       // Обновляем статус блюда на 2 (скрытое)
       await new Promise((resolve, reject) => {
         conn.query(
-          "UPDATE Блюда SET ID_статуса = 2 WHERE ID = ?",
+          "UPDATE Блюда SET Статус_удаления = 1 WHERE ID = ?",
           [dishId],
           (err) => (err ? reject(err) : resolve())
         );
@@ -227,7 +227,7 @@ class ContmanController {
       // Обновляем статус спецпредложения на 2, если оно связано с этим блюдом
       await new Promise((resolve, reject) => {
         conn.query(
-          "UPDATE Спец_предложения SET ID_статуса = 2 WHERE ID_блюда = ?",
+          "UPDATE Спец_предложения SET Статус_удаления = 1 WHERE ID_блюда = ?",
           [dishId],
           (err) => (err ? reject(err) : resolve())
         );
@@ -288,11 +288,11 @@ class ContmanController {
       // Проверяем статус категории
       const categoryStatus = await new Promise((resolve, reject) => {
         conn.query(
-          "SELECT ID_статуса FROM Категория_блюда WHERE ID = ?",
+          "SELECT Статус_удаления FROM Категория_блюда WHERE ID = ?",
           [categoryId],
           (err, results) => {
             if (err) return reject(err);
-            resolve(results[0]?.ID_статуса ?? null);
+            resolve(results[0]?.Статус_удаления ?? null);
           }
         );
       });
@@ -301,7 +301,7 @@ class ContmanController {
       if (categoryStatus === 2) {
         await new Promise((resolve, reject) => {
           conn.query(
-            "UPDATE Категория_блюда SET ID_статуса = 1 WHERE ID = ?",
+            "UPDATE Категория_блюда SET Статус_удаления = 0 WHERE ID = ?",
             [categoryId],
             (err) => (err ? reject(err) : resolve())
           );
@@ -316,7 +316,7 @@ class ContmanController {
       // Обновляем статус блюда
       await new Promise((resolve, reject) => {
         conn.query(
-          "UPDATE Блюда SET ID_статуса = 1 WHERE ID = ?",
+          "UPDATE Блюда SET Статус_удаления = 0 WHERE ID = ?",
           [dishId],
           (err) => (err ? reject(err) : resolve())
         );
@@ -325,7 +325,7 @@ class ContmanController {
       // Обновляем статус спецпредложений
       await new Promise((resolve, reject) => {
         conn.query(
-          "UPDATE Спец_предложения SET ID_статуса = 1 WHERE ID_блюда = ?",
+          "UPDATE Спец_предложения SET Статус_удаления = 0 WHERE ID_блюда = ?",
           [dishId],
           (err) => (err ? reject(err) : resolve())
         );
@@ -406,7 +406,7 @@ class ContmanController {
   async getCategories(req, res) {
     try {
       // SQL-запрос для получения всех столов
-      const query = `SELECT ID, Наименование FROM Категория_блюда WHERE ID_статуса = 1`;
+      const query = `SELECT ID, Наименование FROM Категория_блюда WHERE Статус_удаления = 0`;
 
       conn.query(query, (err, results) => {
         if (err) {
@@ -519,7 +519,7 @@ class ContmanController {
         // Обновляем статус всех блюд на 2 (скрытые)
         await new Promise((resolve, reject) => {
           conn.query(
-            "UPDATE Блюда SET ID_статуса = 2 WHERE ID IN (?)",
+            "UPDATE Блюда SET Статус_удаления = 1 WHERE ID IN (?)",
             [dishes],
             (err) => (err ? reject(err) : resolve())
           );
@@ -528,7 +528,7 @@ class ContmanController {
         // Обновляем статус спецпредложений на 2
         await new Promise((resolve, reject) => {
           conn.query(
-            "UPDATE Спец_предложения SET ID_статуса = 2 WHERE ID_блюда IN (?)",
+            "UPDATE Спец_предложения SET Статус_удаления = 1 WHERE ID_блюда IN (?)",
             [dishes],
             (err) => (err ? reject(err) : resolve())
           );
@@ -547,7 +547,7 @@ class ContmanController {
       // Обновляем статус категории на 2 (скрытая)
       await new Promise((resolve, reject) => {
         conn.query(
-          "UPDATE Категория_блюда SET ID_статуса = 2 WHERE ID = ?",
+          "UPDATE Категория_блюда SET Статус_удаления = 1 WHERE ID = ?",
           [categoryId],
           (err) => (err ? reject(err) : resolve())
         );
@@ -575,7 +575,7 @@ class ContmanController {
       // Обновляем статус категории на 1 (не скрытая)
       await new Promise((resolve, reject) => {
         conn.query(
-          "UPDATE Категория_блюда SET ID_статуса = 1 WHERE ID = ?",
+          "UPDATE Категория_блюда SET Статус_удаления = 0 WHERE ID = ?",
           [categoryId],
           (err) => (err ? reject(err) : resolve())
         );
@@ -765,7 +765,7 @@ class ContmanController {
               Блюда ON Спец_предложения.ID_блюда = Блюда.ID
             WHERE 
               Спец_предложения.Дата_окончания >= CURRENT_DATE AND 
-              Спец_предложения.ID_статуса = 1
+              Спец_предложения.Статус_удаления = 0
           `;
 
       conn.query(query, (err, results) => {
@@ -800,7 +800,7 @@ class ContmanController {
               Блюда ON Спец_предложения.ID_блюда = Блюда.ID
             WHERE 
               Спец_предложения.Дата_окончания >= CURRENT_DATE AND 
-              Спец_предложения.ID_статуса = 2
+              Спец_предложения.Статус_удаления = 1
           `;
 
       conn.query(query, (err, results) => {
@@ -829,7 +829,7 @@ class ContmanController {
 
     try {
       const query = `
-          UPDATE Спец_предложения SET ID_статуса = 2
+          UPDATE Спец_предложения SET Статус_удаления = 1
           WHERE ID = ?
         `;
       conn.query(query, [id], (err, result) => {
@@ -868,7 +868,7 @@ class ContmanController {
 
     try {
       const query = `
-          UPDATE Спец_предложения SET ID_статуса = 1
+          UPDATE Спец_предложения SET Статус_удаления = 0
           WHERE ID = ?
         `;
       conn.query(query, [id], (err, result) => {
@@ -989,7 +989,7 @@ class ContmanController {
             Спец_предложения
           WHERE 
             Спец_предложения.Дата_окончания >= CURRENT_DATE
-            AND Спец_предложения.ID_статуса = 1
+            AND Спец_предложения.Статус_удаления = 0
         )
     `;
 
