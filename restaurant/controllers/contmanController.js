@@ -297,8 +297,8 @@ class ContmanController {
         );
       });
 
-      // Если категория найдена и статус = 2, меняем её на активную
-      if (categoryStatus === 2) {
+      // Если категория найдена и статус = 1, меняем её на активную
+      if (categoryStatus === 1) {
         await new Promise((resolve, reject) => {
           conn.query(
             "UPDATE Категория_блюда SET Статус_удаления = 0 WHERE ID = ?",
