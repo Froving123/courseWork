@@ -47,10 +47,10 @@ class OrderController {
           message: "Сессия была закончена, авторизуйтесь заново",
         });
       }
-  
+
       const token = authHeader.split(" ")[1];
       let decodedToken;
-  
+
       try {
         decodedToken = jwt.verify(token, jwtSecret);
       } catch (err) {
@@ -59,25 +59,25 @@ class OrderController {
           message: "Сессия была закончена, авторизуйтесь заново",
         });
       }
-  
+
       const userId = decodedToken.userId;
       const { address, totalPrice, payment, comment } = req.body;
-  
+
       const currentTime = new Date();
       const hours = currentTime.getHours();
       const minutes = currentTime.getMinutes();
-  
+
       if (hours < 7 || (hours === 22 && minutes > 0) || hours > 22) {
         return res.status(400).json({
           success: false,
           message: "Заказать можно только с 07:00 до 22:00",
         });
       }
-  
-      const insertAddressQuery = `INSERT INTO Адрес (Улица, Дом, Квартира) VALUES (?, ?, ?)`;
+
+      const insertAddressQuery = `INSERT INTO Адрес (Город, Улица, Дом, Квартира) VALUES (?, ?, ?, ?)`;
       conn.query(
         insertAddressQuery,
-        [address.street, address.home, address.flat || null],
+        [address.city, address.street, address.home, address.flat || null],
         (err, addressResult) => {
           if (err) {
             console.error("Ошибка при добавлении адреса:", err);
@@ -86,10 +86,10 @@ class OrderController {
               message: "Ошибка при добавлении адреса",
             });
           }
-  
+
           const addressId = addressResult.insertId;
           const deliveryPrice = totalPrice >= 1000 ? 0 : 500;
-  
+
           const insertOrderQuery = `
             INSERT INTO 
               Заказ (ID_статуса, ID_адреса, ID_пользователя, Общая_цена_блюд, Цена_доставки, ID_способа, Дата_заказа, Время_заказа, Примечания) 
@@ -106,9 +106,9 @@ class OrderController {
                   message: "Ошибка при добавлении заказа",
                 });
               }
-  
+
               const orderId = orderResult.insertId;
-  
+
               const findFoodQuery = `SELECT ID_блюда, Количество FROM Блюда_в_корзине WHERE ID_пользователя = ?`;
               conn.query(findFoodQuery, [userId], (err, foodResults) => {
                 if (err || foodResults.length === 0) {
@@ -118,14 +118,14 @@ class OrderController {
                     message: "Блюда не найдены",
                   });
                 }
-  
+
                 const insertFoodQuery = `INSERT INTO Блюда_в_заказе (ID_блюда, Количество, ID_заказа) VALUES ?`;
                 const foodValues = foodResults.map((food) => [
                   food.ID_блюда,
                   food.Количество,
                   orderId,
                 ]);
-  
+
                 conn.query(insertFoodQuery, [foodValues], (err) => {
                   if (err) {
                     console.error("Ошибка при добавлении блюд в заказ:", err);
@@ -134,17 +134,20 @@ class OrderController {
                       message: "Ошибка при добавлении блюд в заказ",
                     });
                   }
-  
+
                   const deleteFoodQuery = `DELETE FROM Блюда_в_корзине WHERE ID_пользователя = ?`;
                   conn.query(deleteFoodQuery, [userId], (err) => {
                     if (err) {
-                      console.error("Ошибка при удалении блюд из корзины:", err);
+                      console.error(
+                        "Ошибка при удалении блюд из корзины:",
+                        err
+                      );
                       return res.status(500).json({
                         success: false,
                         message: "Ошибка при удалении блюд из корзины",
                       });
                     }
-  
+
                     return res.status(200).json({ success: true });
                   });
                 });
@@ -157,7 +160,7 @@ class OrderController {
       console.error("Ошибка на сервере:", error);
       res.status(500).json({ success: false });
     }
-  }  
+  }
 
   async removeOrder(req, res) {
     try {
@@ -253,7 +256,7 @@ class OrderController {
           Заказ.ID AS orderId,
           Заказ.Дата_заказа AS orderDate,
           Заказ.Время_заказа AS orderTime,
-          CONCAT(Адрес.Улица, ', дом ', Адрес.Дом, 
+          CONCAT('г.', Адрес.город, ', ул.', Адрес.Улица, ', дом ', Адрес.Дом, 
             IF(Адрес.Квартира IS NOT NULL, CONCAT(', кв. ', Адрес.Квартира), '')) AS address,
           Статус_заказа.Наименование AS status,
           (Заказ.Общая_цена_блюд + Заказ.Цена_доставки) AS totalPrice,

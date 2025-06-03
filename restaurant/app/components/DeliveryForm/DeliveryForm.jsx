@@ -6,6 +6,7 @@ import { useCart } from "@/CartContext";
 
 export const DeliveryForm = (props) => {
   const [newItem, setNewItem] = useState({
+    city: "",
     street: "",
     home: "",
     flat: "",
@@ -78,7 +79,7 @@ export const DeliveryForm = (props) => {
       return;
     }
 
-    if (!newItem.street || !newItem.home || !newItem.payment) {
+    if (!newItem.city || !newItem.street || !newItem.home || !newItem.payment) {
       setError("Пожалуйста, заполните все обязательные поля!");
       setTimeout(() => setError(""), 3000);
       return;
@@ -86,6 +87,7 @@ export const DeliveryForm = (props) => {
 
     const orderData = {
       address: {
+        city: newItem.city,
         street: newItem.street,
         home: newItem.home,
         flat: newItem.flat || "",
@@ -116,6 +118,7 @@ export const DeliveryForm = (props) => {
       }
 
       setNewItem({
+        city: "",
         street: "",
         home: "",
         flat: "",
@@ -133,7 +136,14 @@ export const DeliveryForm = (props) => {
   };
 
   const handleClear = () => {
-    setNewItem({ street: "", home: "", flat: "", payment: "", comment: "" });
+    setNewItem({
+      city: "",
+      street: "",
+      home: "",
+      flat: "",
+      payment: "",
+      comment: "",
+    });
   };
 
   useEffect(() => {
@@ -144,6 +154,21 @@ export const DeliveryForm = (props) => {
     <form className={Styles["form"]} onSubmit={submitOrder}>
       <h2 className={Styles["form__title"]}>Оформление</h2>
       <div className={Styles["form__fields"]}>
+        <label className={Styles["form__field"]}>
+          <span className={Styles["form__field-title"]}>
+            Город<span className={Styles["required"]}>*</span>
+          </span>
+          <input
+            className={`${Styles["form__field-input"]} ${
+              !newItem.city && error ? Styles["error-border"] : ""
+            }`}
+            type="text"
+            aria-required="true"
+            value={newItem.city}
+            placeholder="Березники"
+            onChange={russianInput("street")}
+          />
+        </label>
         <label className={Styles["form__field"]}>
           <span className={Styles["form__field-title"]}>
             Улица<span className={Styles["required"]}>*</span>

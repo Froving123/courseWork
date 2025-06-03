@@ -22,8 +22,8 @@ class courController {
               Заказ.Время_заказа AS orderTime,
               Заказ.Время_доставки AS deliveryTime,
               Заказ.Примечания AS comment,
-              CONCAT(Адрес.Улица, ', дом ', Адрес.Дом, 
-                  IF(Адрес.Квартира IS NOT NULL, CONCAT(', кв. ', Адрес.Квартира), '')) AS address,
+              CONCAT('г.', Адрес.город, ', ул.', Адрес.Улица, ', дом ', Адрес.Дом, 
+              IF(Адрес.Квартира IS NOT NULL, CONCAT(', кв. ', Адрес.Квартира), '')) AS address,
               Статус_заказа.Наименование AS status,
               (Заказ.Общая_цена_блюд + Заказ.Цена_доставки) AS totalPrice,
               Способ_оплаты.Наименование AS paymentMethod,
@@ -216,8 +216,8 @@ class courController {
           Заказ.Время_заказа AS orderTime,
           Заказ.Время_доставки AS deliveryTime,
           Заказ.Примечания AS comment,
-          CONCAT(Адрес.Улица, ', дом ', Адрес.Дом, 
-              IF(Адрес.Квартира IS NOT NULL, CONCAT(', кв. ', Адрес.Квартира), '')) AS address,
+          CONCAT('г.', Адрес.город, ', ул.', Адрес.Улица, ', дом ', Адрес.Дом, 
+            IF(Адрес.Квартира IS NOT NULL, CONCAT(', кв. ', Адрес.Квартира), '')) AS address,
           Статус_заказа.Наименование AS status,
           (Заказ.Общая_цена_блюд + Заказ.Цена_доставки) AS totalPrice,
           Способ_оплаты.Наименование AS paymentMethod,
@@ -289,17 +289,17 @@ class courController {
   async completeOrder(req, res) {
     try {
       const authHeader = req.headers.authorization;
-  
+
       if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({
           success: false,
           message: "Сессия была закончена, авторизуйтесь заново",
         });
       }
-  
+
       const token = authHeader.split(" ")[1];
       let decodedToken;
-  
+
       try {
         decodedToken = jwt.verify(token, jwtSecret);
       } catch (err) {
@@ -308,23 +308,23 @@ class courController {
           message: "Сессия была закончена, авторизуйтесь заново",
         });
       }
-  
+
       const adminId = decodedToken.id;
       const { orderId } = req.body;
-  
+
       if (!orderId || !adminId) {
         return res.status(400).json({
           success: false,
           message: "ID заказа обязателен",
         });
       }
-  
+
       const updateOrderStatusQuery = `
         UPDATE Заказ 
         SET ID_статуса = 5, Время_доставки = CURRENT_TIME() 
         WHERE ID = ? AND ID_статуса = 4
       `;
-  
+
       conn.query(updateOrderStatusQuery, [orderId], (err, results) => {
         if (err) {
           console.error("Ошибка при изменении статуса заказа:", err);
@@ -333,14 +333,14 @@ class courController {
             message: "Ошибка при изменении статуса заказа",
           });
         }
-  
+
         if (results.affectedRows === 0) {
           return res.status(404).json({
             success: false,
             message: "Заказ не найден или уже выдан",
           });
         }
-  
+
         res.status(200).json({
           success: true,
           message: "Заказ выдан",
@@ -353,7 +353,7 @@ class courController {
         message: "Ошибка на сервере при изменении статуса заказа",
       });
     }
-  }  
+  }
 
   async getStoryOrders(req, res) {
     try {
@@ -390,8 +390,8 @@ class courController {
                 Заказ.Время_заказа AS orderTime,
                 Заказ.Время_доставки AS deliveryTime,
                 Заказ.Примечания AS comment,
-                CONCAT(Адрес.Улица, ', дом ', Адрес.Дом, 
-                    IF(Адрес.Квартира IS NOT NULL, CONCAT(', кв. ', Адрес.Квартира), '')) AS address,
+                CONCAT('г.', Адрес.город, ', ул.', Адрес.Улица, ', дом ', Адрес.Дом, 
+                IF(Адрес.Квартира IS NOT NULL, CONCAT(', кв. ', Адрес.Квартира), '')) AS address,
                 Статус_заказа.Наименование AS status,
                 (Заказ.Общая_цена_блюд + Заказ.Цена_доставки) AS totalPrice,
                 Способ_оплаты.Наименование AS paymentMethod,
