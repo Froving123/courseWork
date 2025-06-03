@@ -73,11 +73,11 @@ export const DeliveryForm = (props) => {
     const hours = currentTime.getHours();
     const minutes = currentTime.getMinutes();
 
-    if (hours < 7 || (hours === 22 && minutes > 0) || hours > 22) {
-      setError("Заказать можно только с 07:00 до 22:00");
-      setTimeout(() => setError(""), 3000);
-      return;
-    }
+    //if (hours < 7 || (hours === 22 && minutes > 0) || hours > 22) {
+    //  setError("Заказать можно только с 07:00 до 22:00");
+    //  setTimeout(() => setError(""), 3000);
+    //  return;
+   // }
 
     if (!newItem.city || !newItem.street || !newItem.home || !newItem.payment) {
       setError("Пожалуйста, заполните все обязательные поля!");
