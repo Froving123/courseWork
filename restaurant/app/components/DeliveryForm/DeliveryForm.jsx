@@ -166,7 +166,7 @@ export const DeliveryForm = (props) => {
             aria-required="true"
             value={newItem.city}
             placeholder="Березники"
-            onChange={russianInput("street")}
+            onChange={russianInput("city")}
           />
         </label>
         <label className={Styles["form__field"]}>
