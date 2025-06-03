@@ -67,6 +67,12 @@ class OrderController {
       const hours = currentTime.getHours();
       const minutes = currentTime.getMinutes();
 
+      if (hours < 7 || (hours === 22 && minutes > 0) || hours > 22) {
+        return res.status(400).json({
+          success: false,
+          message: "Заказать можно только с 07:00 до 22:00",
+        });
+      }
 
       const insertAddressQuery = `INSERT INTO Адрес (Город, Улица, Дом, Квартира) VALUES (?, ?, ?, ?)`;
       conn.query(
