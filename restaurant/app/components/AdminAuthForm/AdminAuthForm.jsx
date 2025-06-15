@@ -111,7 +111,7 @@ export const AdminAuthForm = (props) => {
 
         // Очищаем формы
         setError("");
-        setLogin("");
+        setEmail("");
         setCopyPassword("");
         setPassword("");
         alert("Сотрудник успешно создал пароль");
